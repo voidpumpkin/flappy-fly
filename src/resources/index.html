@@ -11,14 +11,16 @@
     <body>
         <div id="game-board" class="gameBoard">
             <!-- <div id="game-over-modal" class="modal">
-                <div id="modal-text-container" class="modalTextContainer">
+                <div id="modal-text-container" class="modalContainer">
                     <h1 id="game-over-header" class="gameOverHeader">Game over!</h1>
                     <h2 id="game-over-final-score" class="gameOverFinalScore">Final score: 0</h2>
+                    <a id="try-again-button" class="tryAgainButton">Try again</a>
                 </div>
-                <a id="try-again-button" class="tryAgainButton">Try again</a>
             </div> -->
             <!-- <div id="start-modal" class="modal">
-                <a id="start-button" class="startButton">Start</a>
+                <div id="modal-container" class="modalContainer">
+                    <a id="start-button" class="startButton">Start</a>
+                </div>
             </div> -->
             <div id="score-couter" class="scoreCounter">0</div>
             <div id="flying-zone" class="flyingZone">
@@ -32,7 +34,10 @@
                     <div id="pipe-2-bottom" class="pipeBottom"></div>
                 </div>
             </div>
-            <div id="ground" class="ground"></div>
+            <div id="ground" class="ground">
+                <div id="ground-water" class="groundWater"></div>
+                <div id="ground-background" class="groundBackground"></div>
+            </div>
         </div>
     </body>
 </html>

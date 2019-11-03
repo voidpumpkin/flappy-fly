@@ -1,0 +1,2 @@
+class Pipe {}
+export { Pipe };
