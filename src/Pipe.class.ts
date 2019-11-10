@@ -1,2 +1,0 @@
-class Pipe {}
-export { Pipe };
