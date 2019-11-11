@@ -18,7 +18,7 @@
         "chai": "^4.2.0",
         "concurrently": "^5.0.0",
         "eslint": "^6.6.0",
-        "eslint-config-voidpumpkin": "ssh://git@github.com:voidpumpkin/eslint-config-voidpumpkin.git",
+        "eslint-config-voidpumpkin": "https://github.com/voidpumpkin/eslint-config-voidpumpkin.git",
         "koa": "^2.11.0",
         "koa-static": "^5.0.0",
         "mocha": "^6.2.2",
