@@ -1,9 +1,12 @@
 import { GameElement } from './GameElement.class';
+import { Observer } from './Observer.interface';
+import { Observarable } from './Observerable.interface';
 
 const MAX_Y = 100;
 const MIN_Y = 0;
 
-class Fly extends GameElement {
+class Fly extends GameElement implements Observarable {
+    private _observers: Observer[] = [];
     private _ySpeed = 0;
     private _yPosition = 50;
     private _rotation = 0;
@@ -39,9 +42,8 @@ class Fly extends GameElement {
         this._rotation = this._ySpeed * this._rotationSpeed;
     }
     private onBellowGround(): void {
-        this._ySpeed = MIN_Y;
-        this._yPosition = MIN_Y;
         this._rotation = -1 * this._rotationSpeed;
+        this.notifyObservers();
     }
     onBoardClick(): void {
         this._ySpeed = this._flyPower;
@@ -54,6 +56,16 @@ class Fly extends GameElement {
         this.htmlElement.style.bottom = this._yPosition + '%';
         this.htmlElement.style.transform = `rotate(${this._rotation}deg)`;
         super.onFrame();
+    }
+    subscribe(observer: Observer): void {
+        this._observers.push(observer);
+    }
+    unsubscribe(observer: Observer): void {
+        const observerId = this._observers.indexOf(observer);
+        this._observers.splice(observerId);
+    }
+    notifyObservers(): void {
+        this._observers.forEach((e: Observer): void => e.notify());
     }
 }
 export { Fly };

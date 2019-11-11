@@ -73,7 +73,7 @@ class FlappyFlyGame extends GameElement implements Observer {
         ) {
             this.start();
         } else if (message === FlyingZoneObservarableMessages.END_GAME) {
-            // this.gameOver();
+            this.gameOver();
         }
     }
 }

@@ -14,7 +14,7 @@ enum classNameByToggleEnum {
     false = 'flyingZoneBackgroundImage2'
 }
 
-class FlyingZone extends GameElement implements Observarable {
+class FlyingZone extends GameElement implements Observarable, Observer {
     private _observers: Observer[] = [];
     private _obstacleCount = 0;
     private _framesSinceLastObstacleSpawn = 0;
@@ -25,6 +25,7 @@ class FlyingZone extends GameElement implements Observarable {
         super('flying-zone', 'flyingZone', {
             fly: new Fly()
         });
+        this.children.fly.subscribe(this);
         this.addBackground();
     }
     private addBackground(): void {
@@ -49,7 +50,7 @@ class FlyingZone extends GameElement implements Observarable {
     private runObstacleFlyInteractions(e: Obstacle): void {
         const { topBar, bottomBar } = e.children;
         const { fly } = this.children;
-        if (topBar.isColliding(fly) || bottomBar.isColliding(fly)) {
+        if (topBar.isColliding(fly) || bottomBar.isColliding(fly) || this.isColliding(fly)) {
             this.notifyObservers(FlyingZoneObservarableMessages.END_GAME);
         } else if (e.isGivenElementAhead(fly) && !e.isPassed) {
             this.notifyObservers(FlyingZoneObservarableMessages.BAR_PASSED);
@@ -103,6 +104,9 @@ class FlyingZone extends GameElement implements Observarable {
     }
     notifyObservers(message: FlyingZoneObservarableMessages): void {
         this._observers.forEach((e: Observer): void => e.notify(message));
+    }
+    notify(): void {
+        this.notifyObservers(FlyingZoneObservarableMessages.END_GAME);
     }
 }
 
