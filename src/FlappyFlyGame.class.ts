@@ -1,12 +1,15 @@
 import { GameElement } from './GameElement.class';
-import { StartModal } from './StartModal.class';
-import { EndModal } from './EndModal.class';
-import { FlyingZone } from './FlyingZone.class';
+import { StartModal, StartModalObservarableMessages } from './StartModal.class';
+import { EndModal, EndModalObservarableMessages } from './EndModal.class';
+import { FlyingZone, FlyingZoneObservarableMessages } from './FlyingZone.class';
 import { Ground } from './Ground.class';
 import { ScoreCounter } from './ScoreCounter.class';
+import { Observer } from './Observer.interface';
 
-class FlappyFlyGame extends GameElement {
-    runningGameIntervalId: number;
+class FlappyFlyGame extends GameElement implements Observer {
+    private static _instance: FlappyFlyGame;
+    private _runningGameIntervalId: number;
+    private _frameTimeOut = 10;
     children: {
         startModal: StartModal;
         endModal: EndModal;
@@ -14,7 +17,7 @@ class FlappyFlyGame extends GameElement {
         flyingZone: FlyingZone;
         ground: Ground;
     };
-    constructor(parent: HTMLElement) {
+    private constructor(parent: HTMLElement) {
         super('flappy-fly-game', 'flappyFlyGame', {
             startModal: new StartModal(),
             endModal: new EndModal(),
@@ -23,32 +26,17 @@ class FlappyFlyGame extends GameElement {
             ground: new Ground()
         });
         this.parent = parent;
-        this.htmlElement.addEventListener('click', () => {
-            this.onClick();
-        });
-        this.children.startModal.startGameClb = (): void => {
-            this.start();
-        };
-        this.children.endModal.startGameClb = (): void => {
-            this.start();
-        };
+        this.htmlElement.addEventListener('click', () => this.onClick());
+        this.children.startModal.subscribe(this);
+        this.children.endModal.subscribe(this);
     }
-    start(): void {
-        this.recreateChildren();
-        this.runningGameIntervalId = setInterval(() => this.onFrame(), 10);
+    private onClick(): void {
+        this.children.flyingZone.onGameBoardClick();
     }
-    gameOver(): void {
-        clearInterval(this.runningGameIntervalId);
-        this.children.endModal.setFinalScore(this.children.scoreCounter.score);
-        this.children.endModal.show();
+    static getInstance(parent?: HTMLElement): FlappyFlyGame {
+        return this._instance || (this._instance = new this(parent));
     }
-    onClick(): void {
-        this.children.flyingZone.onBoardClick();
-    }
-    onPassBar(): void {
-        this.children.scoreCounter.addScore();
-    }
-    recreateChildren(): void {
+    private recreateChildren(): void {
         this.children.scoreCounter.htmlElement.remove();
         this.children.flyingZone.htmlElement.remove();
         this.children.ground.htmlElement.remove();
@@ -61,8 +49,32 @@ class FlappyFlyGame extends GameElement {
             flyingZone: new FlyingZone(),
             ground: new Ground()
         });
-        this.children.flyingZone.gameOverClb = (): void => this.gameOver();
-        this.children.flyingZone.passBarClb = (): void => this.onPassBar();
+        this.children.scoreCounter.flyingZone = this.children.flyingZone;
+        this.children.flyingZone.subscribe(this);
+    }
+    start(): void {
+        this.recreateChildren();
+        this._runningGameIntervalId = window.setInterval(() => this.onFrame(), this._frameTimeOut);
+    }
+    gameOver(): void {
+        clearInterval(this._runningGameIntervalId);
+        this.children.endModal.finalScore = this.children.scoreCounter.score;
+        this.children.endModal.show();
+    }
+    notify(
+        message:
+            | StartModalObservarableMessages
+            | EndModalObservarableMessages
+            | FlyingZoneObservarableMessages
+    ): void {
+        if (
+            message === StartModalObservarableMessages.START_GAME ||
+            message === EndModalObservarableMessages.START_GAME
+        ) {
+            this.start();
+        } else if (message === FlyingZoneObservarableMessages.END_GAME) {
+            this.gameOver();
+        }
     }
 }
 export { FlappyFlyGame };

@@ -1,7 +1,9 @@
 import { GameElement } from './GameElement.class';
+import { Observarable } from './Observerable.interface';
+import { Observer } from './Observer.interface';
 
-class StartButton extends GameElement {
-    startGameClb: Function = (): void => {};
+class StartButton extends GameElement implements Observarable {
+    private _observers: Observer[] = [];
     constructor() {
         super('start-button', 'startButton', undefined, 'a', 'Start');
         this.htmlElement.addEventListener('click', () => {
@@ -9,7 +11,17 @@ class StartButton extends GameElement {
         });
     }
     onClick(): void {
-        this.startGameClb();
+        this.notifyObservers();
+    }
+    subscribe(observer: Observer): void {
+        this._observers.push(observer);
+    }
+    unsubscribe(observer: Observer): void {
+        const observerId = this._observers.indexOf(observer);
+        this._observers.splice(observerId);
+    }
+    notifyObservers(): void {
+        this._observers.forEach((e: Observer): void => e.notify());
     }
 }
 

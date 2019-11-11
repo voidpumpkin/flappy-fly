@@ -1,20 +1,26 @@
 import { GameElement } from './GameElement.class';
 import { Fly } from './Fly.class';
 import { Obstacle } from './Obstacle.class';
+import { Observarable } from './Observerable.interface';
+import { Observer } from './Observer.interface';
+
+enum FlyingZoneObservarableMessages {
+    BAR_PASSED = 'BAR_PASSED',
+    END_GAME = 'END_GAME'
+}
 
 enum classNameByToggleEnum {
     true = 'flyingZoneBackgroundImage1',
     false = 'flyingZoneBackgroundImage2'
 }
 
-class FlyingZone extends GameElement {
-    private obstacleCount = 0;
-    private framesSinceLastObstacle = 0;
-    private obstacleAppieringSpeed = 4;
-    private framesForObstacleAppiernace = 272;
-    public gameOverClb: Function = (): void => {};
-    public passBarClb: Function = (): void => {};
-    public children: {
+class FlyingZone extends GameElement implements Observarable {
+    private _observers: Observer[] = [];
+    private _obstacleCount = 0;
+    private _framesSinceLastObstacle = 0;
+    private _obstacleAppieringSpeed = 4;
+    private _framesForObstacleAppiernace = 272;
+    children: {
         fly: Fly;
     };
     constructor() {
@@ -25,63 +31,83 @@ class FlyingZone extends GameElement {
     }
     private addBackground(): void {
         let toggle = false;
-        setInterval(() => {
+        window.setInterval(() => {
             this.htmlElement.classList.remove(classNameByToggleEnum[toggle.toString()]);
             toggle = !toggle;
             this.htmlElement.classList.add(classNameByToggleEnum[toggle.toString()]);
         }, 150);
     }
-    public onBoardClick(): void {
-        this.children.fly.onBoardClick();
-    }
-    public onFrame(): void {
-        this.checkCollisions();
-        //FIXME:
-        this.obstacleSpawning();
-        super.onFrame();
-    }
-    private checkCollisions(): void {
-        const obstacles = Object.keys(this.children).reduce(
-            (obstacles: Array<GameElement>, key: string): Array<GameElement> => {
-                if (key.includes('obstacle')) {
-                    obstacles.push(this.children[key]);
-                }
-                return obstacles;
-            },
-            []
-        );
-        obstacles.forEach((e: Obstacle) => {
-            if (
-                e.children.topBar.isColliding(this.children.fly) ||
-                e.children.bottomBar.isColliding(this.children.fly)
-            ) {
-                this.gameOverClb();
-            } else if (e.isElementAhead(this.children.fly) && !e.isPassed) {
-                this.passBarClb();
-                e.isPassed = true;
-            }
+    private runObjectInteractions(): void {
+        this.getObstacles().forEach((e: Obstacle) => {
+            this.runObstacleFlyInteractions(e);
+            this.runObstacleFlyZoneInteractions(e);
         });
     }
-    private obstacleSpawning(): void {
-        if (this.framesSinceLastObstacle > this.framesForObstacleAppiernace) {
-            const newFramesForObstacleAppiernace =
-                this.framesForObstacleAppiernace - this.obstacleAppieringSpeed;
-            this.framesForObstacleAppiernace =
-                newFramesForObstacleAppiernace > 100 ? newFramesForObstacleAppiernace : 100;
-            const newObstacles = {};
-            newObstacles[`obstacle${this.obstacleCount}`] = new Obstacle(
-                this.obstacleCount,
-                (id: number): void => this.removeObstacle(id)
-            );
-            this.obstacleCount++;
-            this.framesSinceLastObstacle = 0;
-            this.addChildren(newObstacles);
+    private runObstacleFlyZoneInteractions(e: Obstacle): void {
+        if (e.isGivenElementAhead(this)) {
+            this.removeObstacle(e.id);
         }
-        this.framesSinceLastObstacle++;
     }
-    public removeObstacle(id: number): void {
+    private runObstacleFlyInteractions(e: Obstacle): void {
+        const { topBar, bottomBar } = e.children;
+        const { fly } = this.children;
+        if (topBar.isColliding(fly) || bottomBar.isColliding(fly)) {
+            this.notifyObservers(FlyingZoneObservarableMessages.END_GAME);
+        } else if (e.isGivenElementAhead(fly) && !e.isPassed) {
+            this.notifyObservers(FlyingZoneObservarableMessages.BAR_PASSED);
+            e.isPassed = true;
+        }
+    }
+    private getObstacles(): GameElement[] {
+        return Object.keys(this.children).reduce(
+            (obstacles: GameElement[], key: string): GameElement[] => [
+                ...obstacles,
+                ...(key.includes('obstacle') ? [this.children[key]] : [])
+            ],
+            []
+        );
+    }
+    private spawnObstacle(): void {
+        this.fastenObstacleAppierance();
+        const newObstacles = {
+            [`obstacle${this._obstacleCount}`]: new Obstacle(this._obstacleCount)
+        };
+        this._obstacleCount++;
+        this.addChildren(newObstacles);
+        this._framesSinceLastObstacle = 0;
+    }
+    private fastenObstacleAppierance(): void {
+        const newFramesForObstacleAppiernace =
+            this._framesForObstacleAppiernace - this._obstacleAppieringSpeed;
+        this._framesForObstacleAppiernace =
+            newFramesForObstacleAppiernace > 100 ? newFramesForObstacleAppiernace : 100;
+    }
+    onGameBoardClick(): void {
+        this.children.fly.onBoardClick();
+    }
+    onFrame(): void {
+        this.runObjectInteractions();
+        if (this._framesSinceLastObstacle > this._framesForObstacleAppiernace) {
+            this.spawnObstacle();
+        }
+        this._framesSinceLastObstacle++;
+        super.onFrame();
+    }
+
+    removeObstacle(id: number): void {
+        this.children[`obstacle${id}`].unrender();
         delete this.children[`obstacle${id}`];
+    }
+    subscribe(observer: Observer): void {
+        this._observers.push(observer);
+    }
+    unsubscribe(observer: Observer): void {
+        const observerId = this._observers.indexOf(observer);
+        this._observers.splice(observerId);
+    }
+    notifyObservers(message: FlyingZoneObservarableMessages): void {
+        this._observers.forEach((e: Observer): void => e.notify(message));
     }
 }
 
-export { FlyingZone };
+export { FlyingZone, FlyingZoneObservarableMessages };

@@ -1,8 +1,14 @@
 import { GameElement } from './GameElement.class';
 import { TryAgainButton } from './TryAgainButton.class';
+import { Observarable } from './Observerable.interface';
+import { Observer } from './Observer.interface';
 
-class EndModal extends GameElement {
-    startGameClb: Function = (): void => {};
+enum EndModalObservarableMessages {
+    START_GAME = 'START_GAME'
+}
+
+class EndModal extends GameElement implements Observarable, Observer {
+    private _observers: Observer[] = [];
     children: {
         modalContainer: GameElement & {
             children: {
@@ -32,23 +38,34 @@ class EndModal extends GameElement {
                 tryAgainButton: new TryAgainButton()
             })
         });
-        this.children.modalContainer.children.tryAgainButton.startGameClb = (): void => {
-            this.onStartGame();
-        };
         this.hide();
-    }
-    setFinalScore(finalScore: number): void {
-        this.children.modalContainer.children.gameOverFinalScore.htmlElement.textContent = `Final score: ${finalScore}`;
+        this.children.modalContainer.children.tryAgainButton.subscribe(this);
     }
     private onStartGame(): void {
         this.hide();
-        this.startGameClb();
+        this.notifyObservers(EndModalObservarableMessages.START_GAME);
     }
-    public show(): void {
-        this.htmlElement.style.display = null;
+    set finalScore(finalScore: number) {
+        this.children.modalContainer.children.gameOverFinalScore.htmlElement.textContent = `Final score: ${finalScore}`;
     }
-    public hide(): void {
+    hide(): void {
         this.htmlElement.style.display = 'none';
     }
+    show(): void {
+        this.htmlElement.style.display = null;
+    }
+    subscribe(observer: Observer): void {
+        this._observers.push(observer);
+    }
+    unsubscribe(observer: Observer): void {
+        const observerId = this._observers.indexOf(observer);
+        this._observers.splice(observerId);
+    }
+    notifyObservers(message: EndModalObservarableMessages): void {
+        this._observers.forEach((e: Observer): void => e.notify(message));
+    }
+    notify(): void {
+        this.onStartGame();
+    }
 }
-export { EndModal };
+export { EndModal, EndModalObservarableMessages };

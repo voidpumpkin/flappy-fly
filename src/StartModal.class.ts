@@ -1,9 +1,15 @@
 import { GameElement } from './GameElement.class';
 import { StartButton } from './StartButton.class';
+import { Observer } from './Observer.interface';
+import { Observarable } from './Observerable.interface';
 
-class StartModal extends GameElement {
-    startGameClb: Function = (): void => {};
-    protected children: {
+enum StartModalObservarableMessages {
+    START_GAME = 'START_GAME'
+}
+
+class StartModal extends GameElement implements Observarable, Observer {
+    private _observers: Observer[] = [];
+    children: {
         modalContainer: GameElement & {
             children: {
                 startButton: StartButton;
@@ -16,16 +22,27 @@ class StartModal extends GameElement {
                 startButton: new StartButton()
             })
         });
-        this.children.modalContainer.children.startButton.startGameClb = (): void => {
-            this.onStartGame();
-        };
+        this.children.modalContainer.children.startButton.subscribe(this);
     }
-    onStartGame(): void {
+    private onStartGame(): void {
         this.hide();
-        this.startGameClb();
+        this.notifyObservers(StartModalObservarableMessages.START_GAME);
     }
     hide(): void {
         this.htmlElement.style.display = 'none';
     }
+    subscribe(observer: Observer): void {
+        this._observers.push(observer);
+    }
+    unsubscribe(observer: Observer): void {
+        const observerId = this._observers.indexOf(observer);
+        this._observers.splice(observerId);
+    }
+    notifyObservers(message: StartModalObservarableMessages): void {
+        this._observers.forEach((e: Observer): void => e.notify(message));
+    }
+    notify(): void {
+        this.onStartGame();
+    }
 }
-export { StartModal };
+export { StartModal, StartModalObservarableMessages };

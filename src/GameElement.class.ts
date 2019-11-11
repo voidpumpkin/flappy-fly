@@ -2,7 +2,7 @@
 class GameElement {
     htmlElement: HTMLElement;
     parent: HTMLElement;
-    protected children: Record<string, any>;
+    children: Record<string, any>;
     constructor(
         id: string,
         className: string,
@@ -18,18 +18,18 @@ class GameElement {
         this.setChildrenParentToThis();
     }
     private setChildrenParentToThis(): void {
-        const { children } = this;
+        const { children: children } = this;
         Object.keys(children).forEach(key => {
             children[key].parent = this.htmlElement;
         });
     }
     render(): void {
-        const { parent, htmlElement: element, children } = this;
+        const { parent, htmlElement: element, children: children } = this;
         parent.appendChild(element);
         Object.keys(children).forEach(key => children[key].render());
     }
     onFrame(): void {
-        const { children } = this;
+        const { children: children } = this;
         Object.keys(children).forEach(key => children[key].onFrame());
     }
     addChildren(children: Record<string, any>): void {
