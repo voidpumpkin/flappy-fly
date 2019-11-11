@@ -1,5 +1,8 @@
 import { GameElement } from './GameElement.class';
 
+const MAX_Y = 100;
+const MIN_Y = 0;
+
 class Fly extends GameElement {
     private _ySpeed = 0;
     private _yPosition = 50;
@@ -11,12 +14,12 @@ class Fly extends GameElement {
         super('fly', 'fly');
     }
     private runPhysics(): void {
-        const isInFlyingZone = this._yPosition >= 0 && this._yPosition <= 100;
+        const isInFlyingZone = this._yPosition >= MIN_Y && this._yPosition <= MAX_Y;
         if (isInFlyingZone) {
             this._ySpeed -= this._gravity;
             const positionAfterGravity = this._yPosition + this._ySpeed;
-            const isBellowGround = positionAfterGravity < 0;
-            const isAboveFlyingZone = positionAfterGravity > 100;
+            const isBellowGround = positionAfterGravity < MIN_Y;
+            const isAboveFlyingZone = positionAfterGravity > MAX_Y;
             if (isBellowGround) {
                 this.onBellowGround();
             } else if (isAboveFlyingZone) {
@@ -31,13 +34,13 @@ class Fly extends GameElement {
         this._rotation = this._ySpeed * this._rotationSpeed;
     }
     private onAboveFlyingZone(): void {
-        this._ySpeed = 0;
-        this._yPosition = 100;
+        this._ySpeed = MIN_Y;
+        this._yPosition = MAX_Y;
         this._rotation = this._ySpeed * this._rotationSpeed;
     }
     private onBellowGround(): void {
-        this._ySpeed = 0;
-        this._yPosition = 0;
+        this._ySpeed = MIN_Y;
+        this._yPosition = MIN_Y;
         this._rotation = -1 * this._rotationSpeed;
     }
     onBoardClick(): void {

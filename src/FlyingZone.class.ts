@@ -17,9 +17,7 @@ enum classNameByToggleEnum {
 class FlyingZone extends GameElement implements Observarable {
     private _observers: Observer[] = [];
     private _obstacleCount = 0;
-    private _framesSinceLastObstacle = 0;
-    private _obstacleAppieringSpeed = 4;
-    private _framesForObstacleAppiernace = 272;
+    private _framesSinceLastObstacleSpawn = 0;
     children: {
         fly: Fly;
     };
@@ -68,29 +66,27 @@ class FlyingZone extends GameElement implements Observarable {
         );
     }
     private spawnObstacle(): void {
-        this.fastenObstacleAppierance();
-        const newObstacles = {
-            [`obstacle${this._obstacleCount}`]: new Obstacle(this._obstacleCount)
-        };
+        Obstacle.applyObstacleAppieranceSpeed();
+        Obstacle.applyyAppiernaceDiffSpeed();
         this._obstacleCount++;
+        const newObstacles = {
+            [`obstacle${this._obstacleCount}`]: new Obstacle(
+                this._obstacleCount,
+                this.children[`obstacle${this._obstacleCount - 1}`]
+            )
+        };
         this.addChildren(newObstacles);
-        this._framesSinceLastObstacle = 0;
-    }
-    private fastenObstacleAppierance(): void {
-        const newFramesForObstacleAppiernace =
-            this._framesForObstacleAppiernace - this._obstacleAppieringSpeed;
-        this._framesForObstacleAppiernace =
-            newFramesForObstacleAppiernace > 100 ? newFramesForObstacleAppiernace : 100;
+        this._framesSinceLastObstacleSpawn = 0;
     }
     onGameBoardClick(): void {
         this.children.fly.onBoardClick();
     }
     onFrame(): void {
         this.runObjectInteractions();
-        if (this._framesSinceLastObstacle > this._framesForObstacleAppiernace) {
+        if (this._framesSinceLastObstacleSpawn > Obstacle.framesForObstacleAppiernace) {
             this.spawnObstacle();
         }
-        this._framesSinceLastObstacle++;
+        this._framesSinceLastObstacleSpawn++;
         super.onFrame();
     }
 
