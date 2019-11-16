@@ -1,8 +1,8 @@
 import { GameElement } from './GameElement.class';
-import { Observarable } from './Observerable.interface';
+import { Observable } from './Observable.interface';
 import { Observer } from './Observer.interface';
 
-class StartButton extends GameElement implements Observarable {
+class StartButton extends GameElement implements Observable {
     private _observers: Observer[] = [];
     constructor() {
         super('start-button', 'startButton', undefined, 'a', 'Start');

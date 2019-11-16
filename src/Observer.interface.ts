@@ -1,5 +1,3 @@
-interface Observer {
+export interface Observer {
     notify(...args: unknown[]): void;
 }
-
-export { Observer };

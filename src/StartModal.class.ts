@@ -1,13 +1,13 @@
 import { GameElement } from './GameElement.class';
 import { StartButton } from './StartButton.class';
 import { Observer } from './Observer.interface';
-import { Observarable } from './Observerable.interface';
+import { Observable } from './Observable.interface';
 
 enum StartModalObservarableMessages {
     START_GAME = 'START_GAME'
 }
 
-class StartModal extends GameElement implements Observarable, Observer {
+class StartModal extends GameElement implements Observable, Observer {
     private _observers: Observer[] = [];
     children: {
         modalContainer: GameElement & {

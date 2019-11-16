@@ -6,19 +6,21 @@
         "start": "node server.js",
         "build": "parcel build ./src/resources/index.html",
         "dev": "concurrently \"parcel ./src/resources/index.html\" \"mocha ./src/tests/ --watch\"",
-        "test": "mocha ./src/tests/"
+        "test": "mocha ./src/tests/**/*test.tsx"
     },
     "repository": "git@github.com:voidpumpkin/flappy-fly.git",
     "author": "voidpumpkin <32368314+voidpumpkin@users.noreply.github.com>",
     "license": "MIT",
     "private": true,
     "dependencies": {
-        "@typescript-eslint/eslint-plugin": "^2.5.0",
+        "@types/mocha": "^5.2.7",
+        "@typescript-eslint/eslint-plugin": "2.5.0",
         "@typescript-eslint/parser": "^2.5.0",
         "chai": "^4.2.0",
         "concurrently": "^5.0.0",
         "eslint": "^6.6.0",
         "eslint-config-voidpumpkin": "https://github.com/voidpumpkin/eslint-config-voidpumpkin.git",
+        "eslint-plugin-prettier": "3.1.0",
         "koa": "^2.11.0",
         "koa-static": "^5.0.0",
         "mocha": "^6.2.2",

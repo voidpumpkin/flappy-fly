@@ -1,8 +1,8 @@
 import { GameElement } from './GameElement.class';
-import { Observarable } from './Observerable.interface';
+import { Observable } from './Observable.interface';
 import { Observer } from './Observer.interface';
 
-class TryAgainButton extends GameElement implements Observarable {
+class TryAgainButton extends GameElement implements Observable {
     private _observers: Observer[] = [];
     constructor() {
         super('try-again-button', 'tryAgainButton', undefined, 'a');

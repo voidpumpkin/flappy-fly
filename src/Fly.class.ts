@@ -1,11 +1,11 @@
 import { GameElement } from './GameElement.class';
 import { Observer } from './Observer.interface';
-import { Observarable } from './Observerable.interface';
+import { Observable } from './Observable.interface';
 
 const MAX_Y = 100;
 const MIN_Y = 0;
 
-class Fly extends GameElement implements Observarable {
+class Fly extends GameElement implements Observable {
     private _observers: Observer[] = [];
     private _ySpeed = 0;
     private _yPosition = 50;
